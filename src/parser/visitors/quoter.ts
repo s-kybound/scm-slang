@@ -3,6 +3,9 @@
  * Quotes are a part of scheme syntax that allow for the creation of lists.
  */
 
+// TODO: Wait, this is so dumb... I'm just going to use the parser to do this.
+// TODO: Refactor the parser to handle this.
+
 import { Expression, Atomic, Extended } from "../types/node-types";
 import { Visitor } from "./visitor"
 
