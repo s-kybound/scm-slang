@@ -1,9 +1,9 @@
-import { Token } from "../types/token";
-import { TokenType } from "../types/token-type";
-import { Location, Position } from "../types/location";
-import { Atomic, Expression, Extended } from "../types/node-types";
-import * as ParserError from "../parser-error";
-import { Group } from "./token-grouping";
+import { Token } from "../../types/token";
+import { TokenType } from "../../types/token-type";
+import { Location, Position } from "../../types/location";
+import { Atomic, Expression, Extended } from "../../types/node-types";
+import * as ParserError from "../../parser-error";
+import { Group } from "../../s-expression-generator/grouping";
 
 export class SchemeParser {
   private readonly source: string;
