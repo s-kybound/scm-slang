@@ -6,26 +6,21 @@
 // Crafting Interpreters: https://craftinginterpreters.com/
 // py-slang: https://github.com/source-academy/py-slang
 
+/**
+ * A Tokenizer for Scheme.
+ * Processes a string of Scheme code and returns a list of tokens.
+ * Targets literals, list and pair syntax, and symbols.
+ */
 import { Token } from "../types/token";
 import { TokenType } from "../types/token-type";
 import * as TokenizerError from "./tokenizer-error";
-import { Position } from "../types/location";
 
-// syntactic keywords in the scheme language
-let keywords = new Map<string, TokenType>([
+// Special operators that may be considered symbols
+// when combined with other text, but are important
+// to recognize as their own token when alone.
+const KEYWORDS = new Map<string, TokenType>([
   [".", TokenType.DOT],
-  ["if", TokenType.IF],
-  ["let", TokenType.LET],
-  ["cond", TokenType.COND],
-  ["else", TokenType.ELSE],
-  ["set!", TokenType.SET],
-  ["begin", TokenType.BEGIN],
-  ["delay", TokenType.DELAY],
-  ["quote", TokenType.QUOTE],
-  ["export", TokenType.EXPORT],
-  ["import", TokenType.IMPORT],
-  ["define", TokenType.DEFINE],
-  ["lambda", TokenType.LAMBDA],
+  ["...", TokenType.TRIPLE_DOT],
 ]);
 
 export class Tokenizer {
@@ -51,8 +46,10 @@ export class Tokenizer {
     return this.source.charAt(this.current++);
   }
 
+  /**
+   * Jumps over a character, ignoring it.
+   */
   private jump(): void {
-    // when you want to ignore a character
     this.start = this.current;
     this.col++;
     this.current++;
@@ -117,7 +114,11 @@ export class Tokenizer {
         this.addToken(TokenType.BACKTICK);
         break;
       case ",":
+        if (this.match("@")) {
+          this.addToken(TokenType.COMMA_AT);
+        } else {
         this.addToken(TokenType.COMMA);
+        }
         break;
       case "#":
         if (this.match("t") || this.match("f")) {
@@ -147,19 +148,19 @@ export class Tokenizer {
         this.stringToken();
         break;
       case "|":
-        this.identifierTokenLoose();
+        this.symbolTokenLoose();
         break;
       default:
         // Deviates slightly from the original tokenizer.
-        // Scheme allows for identifiers to start with a digit
+        // Scheme allows for symbols to start with a digit
         // or include a specific set of symbols.
         if (this.isDigit(c) || c === "-" || c === ".") {
           // may or may not be a number
-          this.identifierNumberToken();
-        } else if (this.isValidIdentifier(c)) {
+          this.symbolNumberToken();
+        } else if (this.isValidSymbol(c)) {
           // filtered out the potential numbers
-          // these are definitely identifiers
-          this.identifierToken();
+          // these are definitely symbols
+          this.symbolToken();
         } else {
           // error
           throw new TokenizerError.UnexpectedCharacterError(
@@ -189,13 +190,13 @@ export class Tokenizer {
     this.jump();
   }
 
-  private identifierToken(): void {
-    while (this.isValidIdentifier(this.peek())) this.advance();
+  private symbolToken(): void {
+    while (this.isValidSymbol(this.peek())) this.advance();
     this.addToken(this.checkKeyword());
   }
 
-  private identifierTokenLoose(): void {
-    // this is a special case for identifiers
+  private symbolTokenLoose(): void {
+    // this is a special case for symbols
     // ignore the pipe character
     this.jump();
     while (this.peek() != "|" && !this.isAtEnd()) {
@@ -214,13 +215,14 @@ export class Tokenizer {
     this.jump();
   }
 
-  private identifierNumberToken(): void {
+  private symbolNumberToken(): void {
     // only executes when the first digit was already found to be a number.
     // we treat this as a number UNTIL we find it no longer behaves like one.
+    // TODO: the number tokenization only handles exact and inexact numbers for now.
     var first = this.peekPrev();
     var validNumber: boolean = true;
     var hasDot: boolean = first === "." ? true : false;
-    while (this.isValidIdentifier(this.peek())) {
+    while (this.isValidSymbol(this.peek())) {
       var c = this.peek();
       if (!this.isDigit(c)) {
         if (c === ".") {
@@ -266,10 +268,10 @@ export class Tokenizer {
       // trim text first
       text = this.source.substring(this.start + 1, this.current - 1);
     }
-    if (keywords.has(text)) {
-      return keywords.get(text) as TokenType;
+    if (KEYWORDS.has(text)) {
+      return KEYWORDS.get(text) as TokenType;
     }
-    return TokenType.IDENTIFIER;
+    return TokenType.SYMBOL;
   }
 
   private stringToken(): void {
@@ -329,7 +331,7 @@ export class Tokenizer {
     );
   }
 
-  private isValidIdentifier(c: string): boolean {
+  private isValidSymbol(c: string): boolean {
     return !this.isWhitespace(c) && !this.isSpecialSyntax(c);
   }
 

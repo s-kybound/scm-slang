@@ -2,53 +2,36 @@
 // Adapted for Scheme use
 
 export enum TokenType {
-  // + - * / % ^ ! = < > & | ~ etc are recognized as IDENTIFIERS
+  // + - * / % ^ ! = < > & | ~ etc are recognized as symbols
 
   // Single-character tokens
   LEFT_PAREN,
   RIGHT_PAREN,
-  LEFT_BRACKET,
+  LEFT_BRACKET,   // Two bracket types are offered for better readability
   RIGHT_BRACKET,
-  APOSTROPHE,
-  BACKTICK,
-  COMMA,
+
+  // Quotation syntax
+  // the procedure quote, quasiquote, unquote, and unquote-splicing
+  // will all be represented as macros
+  APOSTROPHE,     // Quote
+  BACKTICK,       // Quasiquote
+  COMMA,          // Unquote
+  COMMA_AT,       // Unquote-splicing
+
+  // List syntax
+  DOT,            // Pair notation
+  TRIPLE_DOT,     // Rest argument notation
+
+  // Vector syntax
   HASH,
-  DOT,
 
-  // Two-character tokens
-  COMMA_AT,
-
-  // Atoms: Literals or Identifiers
-  IDENTIFIER,
+  // Atoms: Literals
   NUMBER,
   BOOLEAN,
   STRING,
 
-  // SICP Chapter 1
-  IF,
-  LET,
-  COND,
-  ELSE,
-  DEFINE,
-  LAMBDA,
-
-  // SICP Chapter 2
-  QUOTE,
-  UNQUOTE,
-  QUASIQUOTE,
-
-  // SICP Chapter 3
-  SET,
-  BEGIN,
-  DELAY,
-
-  // Other important keywords
-  IMPORT,
-  EXPORT,
-
-  // Not in scope at the moment
-  VECTOR,
-  UNQUOTE_SPLICING,
+  // Atoms: Symbols
+  SYMBOL,
 
   EOF,
 }
