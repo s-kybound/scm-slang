@@ -31,7 +31,7 @@ export class Token {
     this.pos = new Position(line, col);
     this.endPos = new Position(line, col + lexeme.length - 1);
   }
-
+  
   /**
    * For debugging.
    * @returns A string representation of the token.

@@ -119,7 +119,7 @@ export namespace Atomic {
   export class Identifier implements Expression {
     location: Location;
     name: string;
-    
+
     constructor(location: Location, name: string) {
       this.location = location;
       this.name = name;
@@ -210,11 +210,11 @@ export namespace Atomic {
       this.cdr = cdr;
     }
 
-    public buildSExpression(location: Location, car: Expression, cdr: Expression): Pair {
+    public static buildSExpression(location: Location, car: Expression, cdr: Expression): Pair {
       return new Pair(location, true, car, cdr);
     }
 
-    public buildPair(location: Location, car: Expression, cdr: Expression): Pair {
+    public static buildPair(location: Location, car: Expression, cdr: Expression): Pair {
       return new Pair(location, false, car, cdr);
     }
 
@@ -227,10 +227,23 @@ export namespace Atomic {
    * A node representing nil, an empty scheme list.
    */
   export class Nil implements Expression {
+
     location: Location;
-    constructor(location: Location) {
+    eval: boolean;
+
+    private constructor(location: Location, evaluable: boolean) {
       this.location = location;
+      this.eval = evaluable;
     }
+
+    public static buildSExpression(location: Location): Nil {
+      return new Nil(location, true);
+    }
+
+    public static buildNilList(location: Location): Nil {
+      return new Nil(location, false);
+    }
+
     accept(visitor: Visitor): any {
       return visitor.visitNil(this);
     }

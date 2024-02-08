@@ -109,11 +109,11 @@ export class Printer implements Visitor {
 
   visitPair(node: Atomic.Pair): any {
     // this.indent();
-    this.display("( cons ");
+    this.display("( ");
     node.car.accept(this.increment());
-    this.display(" ");
+    this.display(" . ");
     node.cdr.accept(this.increment());
-    this.display(")");
+    this.display(" ) ");
   }
   visitNil(node: Atomic.Nil): any {
     // this.indent();

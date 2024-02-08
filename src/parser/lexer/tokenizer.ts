@@ -21,6 +21,10 @@ import * as TokenizerError from "./tokenizer-error";
 const KEYWORDS = new Map<string, TokenType>([
   [".", TokenType.DOT],
   ["...", TokenType.TRIPLE_DOT],
+  ["quote", TokenType.QUOTE],
+  ["quasiquote", TokenType.QUASIQUOTE],
+  ["unquote", TokenType.UNQUOTE],
+  ["unquote-splicing", TokenType.UNQUOTE_SPLICING],
 ]);
 
 export class Tokenizer {

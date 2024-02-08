@@ -12,7 +12,8 @@ export class Group {
 
     // Invariants:
     // - A group must not be empty.
-    // - If a group is not parenthesized, it contains only one element, that is not a group.
+    // - If a group is not parenthesized, it contains either one element, that is not a group,
+    //   or two elements, of which the first one is not a group but the second one is.
     // - If a group is parenthesized, it must have matching parentheses.
 
     readonly elements: (Token | Group)[];
@@ -37,8 +38,8 @@ export class Group {
             return (
                 (lParen.type === TokenType.LEFT_PAREN &&
                     rParen.type === TokenType.RIGHT_PAREN) ||
-                    (lParen.type === TokenType.LEFT_BRACKET &&
-                        rParen.type === TokenType.RIGHT_BRACKET)
+                (lParen.type === TokenType.LEFT_BRACKET &&
+                    rParen.type === TokenType.RIGHT_BRACKET)
             );
         }
 
@@ -52,27 +53,57 @@ export class Group {
             );
         }
 
+        // helper function to determine if the token is an affector type.
+        // (and the affector type should be the short version).
+        function isShortAffector(token: Token) {
+            return (
+                token.type === TokenType.APOSTROPHE ||
+                token.type === TokenType.BACKTICK ||
+                token.type === TokenType.HASH ||
+                token.type === TokenType.COMMA ||
+                token.type === TokenType.COMMA_AT
+            );
+        }
+
         // Illegal empty group.
         if (elements.length === 0) {
+            // This should never happen.
+            // If it does its the implementor's fault.
             throw new Error("Empty group.");
         }
 
-        // If the group is not parenthesized, it must contain only one element.
+        // If the group is not parenthesized, the first case contains only one element.
         if (elements.length === 1) {
             const onlyElement: Group | Token = elements[0];
 
             if (onlyElement instanceof Group) {
                 // Return the inner group.
                 // Avoid nested groups that are a product of the grouping generation in the parser.
+                // Ensures the single internal element is not a group.
                 return onlyElement;
             }
-            
+
             // Ensure the single element is a data type by validating its token type.
             if (!isDataType(onlyElement)) {
+                // This should never happen.
+                // If it does its the implementor's fault.
                 throw new Error("Invalid group.");
             }
 
             return new Group(elements);
+        }
+
+        // If the group is not parenthesized, the remaining case contains two elements.
+        if (elements.length === 2) {
+            const firstElement = elements[0];
+
+            // Ensure the first element is an affector type.
+            if (firstElement instanceof Token && isShortAffector(firstElement)) {
+                // Ensure the first element is an affector type.
+                return new Group(elements);
+            }
+
+            // If all else fails, use the most generic case. below.
         }
 
         // If the group is parenthesized, the parentheses must match.
@@ -80,8 +111,8 @@ export class Group {
         const lastElement = elements[elements.length - 1];
         if (
             firstElement instanceof Token &&
-                lastElement instanceof Token &&
-                matchingParentheses(firstElement, lastElement)
+            lastElement instanceof Token &&
+            matchingParentheses(firstElement, lastElement)
         ) {
             return new Group(elements);
         }
@@ -140,9 +171,9 @@ export class Group {
         // we can assume that as long as the first element is a paranthesis, 
         // the last element is also the corresponding paranthesis.
 
-        return firstElement instanceof Token && 
-            (firstElement.type === TokenType.LEFT_PAREN || 
-            firstElement.type === TokenType.LEFT_BRACKET);
+        return firstElement instanceof Token &&
+            (firstElement.type === TokenType.LEFT_PAREN ||
+                firstElement.type === TokenType.LEFT_BRACKET);
     }
 
     /**
