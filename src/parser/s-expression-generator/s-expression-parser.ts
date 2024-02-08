@@ -159,7 +159,10 @@ export class SExpressionParser {
     // regardless of the quote mode.
     switch (token.type) {
       case TokenType.SYMBOL:
-        return new Atomic.Symbol(this.toLocation(token), token.lexeme);
+        if (this.quoteMode !== QuoteMode.NONE) {
+          return new Atomic.Symbol(this.toLocation(token), token.lexeme);
+        }
+        return new Atomic.Identifier(this.toLocation(token), token.lexeme);
       case TokenType.NUMBER:
         return new Atomic.NumericLiteral(this.toLocation(token), token.literal);
       case TokenType.BOOLEAN:
