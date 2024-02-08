@@ -13,6 +13,7 @@ export enum TokenType {
   // Quotation syntax
   // the procedure quote, quasiquote, unquote, and unquote-splicing
   // will all be represented as macros
+  // the default usage will be these characters instead
   APOSTROPHE,     // Quote
   BACKTICK,       // Quasiquote
   COMMA,          // Unquote

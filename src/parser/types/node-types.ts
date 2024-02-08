@@ -119,6 +119,7 @@ export namespace Atomic {
   export class Identifier implements Expression {
     location: Location;
     name: string;
+    
     constructor(location: Location, name: string) {
       this.location = location;
       this.name = name;
@@ -198,13 +199,25 @@ export namespace Atomic {
    */
   export class Pair implements Expression {
     location: Location;
+    eval: boolean; // Determines whether the pair is to be evaluated as a program or not.
     car: Expression;
     cdr: Expression;
-    constructor(location: Location, car: Expression, cdr: Expression) {
+
+    private constructor(location: Location, evaluable: boolean, car: Expression, cdr: Expression) {
       this.location = location;
+      this.eval = evaluable;
       this.car = car;
       this.cdr = cdr;
     }
+
+    public buildSExpression(location: Location, car: Expression, cdr: Expression): Pair {
+      return new Pair(location, true, car, cdr);
+    }
+
+    public buildPair(location: Location, car: Expression, cdr: Expression): Pair {
+      return new Pair(location, false, car, cdr);
+    }
+
     accept(visitor: Visitor): any {
       return visitor.visitPair(this);
     }
@@ -233,6 +246,11 @@ export namespace Atomic {
       this.location = location;
       this.value = value;
     }
+
+    promote(): Identifier {
+      return new Identifier(this.location, this.value);
+    }
+
     accept(visitor: Visitor): any {
       return visitor.visitSymbol(this);
     }
