@@ -43,9 +43,13 @@ export enum TokenType {
   BEGIN,
   DELAY,
 
-  // Other important keywords
+  // Standard import/export syntax
   IMPORT,
   EXPORT,
+
+  // JS import syntax
+  JS_IMPORT,
+  JS_EXPORT,
 
   // Not in scope at the moment
   HASH_VECTOR, // vector

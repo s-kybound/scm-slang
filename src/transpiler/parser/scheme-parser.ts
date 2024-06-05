@@ -183,6 +183,8 @@ export class SchemeParser implements Parser {
         case TokenType.DELAY:
         case TokenType.IMPORT:
         case TokenType.EXPORT:
+        case TokenType.JS_IMPORT:
+        case TokenType.JS_EXPORT:
           elements.push(c);
           break;
         case TokenType.HASH_SEMICOLON:
@@ -492,9 +494,15 @@ export class SchemeParser implements Parser {
         case TokenType.IMPORT:
           this.validateChapter(firstElement, this.BASIC_CHAPTER);
           return this.parseImport(group);
+        case TokenType.JS_IMPORT:
+          this.validateChapter(firstElement, this.BASIC_CHAPTER);
+          return this.parseImport(group, true);
         case TokenType.EXPORT:
           this.validateChapter(firstElement, this.BASIC_CHAPTER);
           return this.parseExport(group);
+        case TokenType.JS_EXPORT:
+          this.validateChapter(firstElement, this.BASIC_CHAPTER);
+          return this.parseExport(group, true);
         case TokenType.VECTOR:
           this.validateChapter(firstElement, this.VECTOR_CHAPTER);
           // same as above, this is an affector group
@@ -1265,17 +1273,21 @@ export class SchemeParser implements Parser {
   /**
    * Parse an import expression.
    * @param group
+   * @param is_js determines whether the import is a JS import or not.
+   *              default is false.
    * @returns
    */
-  private parseImport(group: Group): Atomic.Import {
+  private parseImport(group: Group, is_js: boolean = false): Atomic.Import {
     // Form: (import "<source>" (<identifier>*))
+    //     | (js-import "<source>" (<identifier>*))
     // ensure that the group has 3 elements
     if (group.length() !== 3) {
+      const im_str = is_js ? "js-import" : "import";
       throw new ParserError.ExpectedFormError(
         this.source,
         group.firstToken().pos,
         group.firstToken(),
-        '(import "<source>" (<identifier>*))'
+        `(${im_str} "<source>" (<identifier>*))`
       );
     }
     const elements = group.unwrap();
@@ -1342,24 +1354,29 @@ export class SchemeParser implements Parser {
     return new Atomic.Import(
       group.location,
       convertedSource,
-      convertedIdentifiers
+      convertedIdentifiers,
+      is_js
     );
   }
 
   /**
    * Parse an export expression.
    * @param group
+   * @param is_js determines whether the export is a JS export or not.
+   *              default is false.
    * @returns
    */
-  private parseExport(group: Group): Atomic.Export {
+  private parseExport(group: Group, is_js: boolean = false): Atomic.Export {
     // Form: (export (<definition>))
+    //     | (js-export (<definition>))
     // ensure that the group has 2 elements
     if (group.length() !== 2) {
+      const ex_str = is_js ? "js-export" : "export";
       throw new ParserError.ExpectedFormError(
         this.source,
         group.firstToken().pos,
         group.firstToken(),
-        "(export (<definition>))"
+        `(${ex_str} (<definition>))`
       );
     }
     const elements = group.unwrap();
@@ -1391,7 +1408,7 @@ export class SchemeParser implements Parser {
       );
     }
 
-    return new Atomic.Export(group.location, convertedDefinition);
+    return new Atomic.Export(group.location, convertedDefinition, is_js);
   }
 
   /**

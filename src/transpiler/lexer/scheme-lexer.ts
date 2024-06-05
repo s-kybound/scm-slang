@@ -25,6 +25,8 @@ let keywords = new Map<string, TokenType>([
   ["quote", TokenType.QUOTE],
   ["export", TokenType.EXPORT],
   ["import", TokenType.IMPORT],
+  ["js-import", TokenType.JS_IMPORT],
+  ["js-export", TokenType.JS_EXPORT],
   ["define", TokenType.DEFINE],
   ["lambda", TokenType.LAMBDA],
 ]);

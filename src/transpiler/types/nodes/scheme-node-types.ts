@@ -413,34 +413,40 @@ export namespace Atomic {
     location: Location;
     source: StringLiteral;
     identifiers: Identifier[];
+    is_js: boolean;
     constructor(
       location: Location,
       source: StringLiteral,
-      identifiers: Identifier[]
+      identifiers: Identifier[],
+      is_js: boolean = false
     ) {
       this.location = location;
       this.source = source;
       this.identifiers = identifiers;
+      this.is_js = is_js;
     }
     accept(visitor: Visitor): any {
       return visitor.visitImport(this);
     }
     equals(other: Expression): boolean {
-      if (other instanceof Import) {
-        if (!this.source.equals(other.source)) {
-          return false;
-        }
-        if (this.identifiers.length !== other.identifiers.length) {
-          return false;
-        }
-        for (let i = 0; i < this.identifiers.length; i++) {
-          if (!this.identifiers[i].equals(other.identifiers[i])) {
-            return false;
-          }
-        }
-        return true;
+      if (!(other instanceof Import)) {
+        return false;
       }
-      return false;
+      if (!this.source.equals(other.source)) {
+        return false;
+      }
+      if (this.identifiers.length !== other.identifiers.length) {
+        return false;
+      }
+      for (let i = 0; i < this.identifiers.length; i++) {
+        if (!this.identifiers[i].equals(other.identifiers[i])) {
+          return false;
+        }
+      }
+      if (this.is_js !== other.is_js) {
+        return false;
+      }
+      return true;
     }
   }
 
@@ -452,21 +458,27 @@ export namespace Atomic {
   export class Export implements Expression {
     location: Location;
     definition: Definition | Extended.FunctionDefinition;
+    is_js: boolean;
     constructor(
       location: Location,
-      definition: Definition | Extended.FunctionDefinition
+      definition: Definition | Extended.FunctionDefinition,
+      is_js: boolean = false
     ) {
       this.location = location;
       this.definition = definition;
+      this.is_js = is_js;
     }
     accept(visitor: Visitor): any {
       return visitor.visitExport(this);
     }
     equals(other: Expression): boolean {
-      if (other instanceof Export) {
-        return this.definition.equals(other.definition);
+      if (!(other instanceof Export)) {
+        return false;
       }
-      return false;
+      if (this.is_js !== other.is_js) {
+        return false;
+      }
+      return this.definition.equals(other.definition);
     }
   }
 
